@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollabPad | Real-time Collaborative Editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .CodeMirror {
+            height: calc(100vh - 64px);
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: #282a36 !important;
+        }
+
+        /* Remote cursor styles */
+        .remote-cursor {
+            position: absolute;
+            width: 2px;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .remote-cursor-label {
+            position: absolute;
+            top: -18px;
+            left: 0;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+            color: #fff;
+            border-radius: 3px;
+            pointer-events: none;
+        }
+
+        .user-badge {
+            transition: transform 0.2s ease;
+        }
+
+        .user-badge:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #21222c;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #44475a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6272a4;
+        }
+
+        .connection-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .status-connected {
+            background-color: #50fa7b;
+            box-shadow: 0 0 8px #50fa7b;
+        }
+
+        .status-connecting {
+            background-color: #ffb86c;
+            box-shadow: 0 0 8px #ffb86c;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-disconnected {
+            background-color: #ff5555;
+            box-shadow: 0 0 8px #ff5555;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .typing-indicator {
+            animation: typing 1s infinite;
+        }
+
+        @keyframes typing {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-[#282a36] text-[#f8f8f2] overflow-hidden">
+
+    <!-- Header -->
+    <header
+        class="h-16 border-b border-[#44475a] flex items-center justify-between px-4 md:px-6 bg-[#21222c] z-50 relative">
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="font-bold text-sm md:text-base tracking-tight">CollabPad</h1>
+                <div class="flex items-center text-[10px] md:text-xs text-gray-400">
+                    <span id="status-indicator" class="connection-status status-connecting"></span>
+                    <span id="status-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <!-- Room ID Display -->
+            <div class="hidden sm:flex items-center bg-[#282a36] px-3 py-1.5 rounded-md border border-[#44475a]">
+                <span class="text-gray-400 text-xs mr-2">Room:</span>
+                <span id="room-display" class="text-xs font-mono text-indigo-400">---</span>
+            </div>
+
+            <!-- User List -->
+            <div id="user-list" class="flex -space-x-2">
+                <!-- User badges injected here -->
+            </div>
+
+            <div class="h-8 w-[1px] bg-[#44475a] hidden md:block"></div>
+
+            <!-- Share Button -->
+            <button id="share-btn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                <span class="hidden sm:inline">Share</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Editor -->
+    <main class="relative">
+        <textarea id="editor"></textarea>
+        <!-- Remote cursors container -->
+        <div id="cursors-container"></div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#44475a] text-white px-6 py-3 rounded-full shadow-2xl translate-y-32 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 border border-indigo-400/30 z-50">
+        <svg id="toast-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span id="toast-text">Link copied to clipboard!</span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        // --- Room Management ---
+        function getRoomId() {
+            const hash = window.location.hash;
+            if (hash && hash.length > 1) {
+                return hash.substring(1);
+            }
+            const newId = 'room-' + Math.random().toString(36).substring(2, 10);
+            history.replaceState(null, '', '#' + newId);
+            return newId;
+        }
+
+        const roomId = getRoomId();
+        const shareableUrl = window.location.origin + window.location.pathname + '#' + roomId;
+
+        // UI Elements
+        const roomDisplay = document.getElementById('room-display');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const userListEl = document.getElementById('user-list');
+        const shareBtn = document.getElementById('share-btn');
+        const toast = document.getElementById('toast');
+        const toastText = document.getElementById('toast-text');
+        const toastIcon = document.getElementById('toast-icon');
+
+        roomDisplay.textContent = roomId;
+
+        // --- User Setup ---
+        const userColors = [
+            '#ff5555', '#ffb86c', '#f1fa8c', '#50fa7b',
+            '#8be9fd', '#bd93f9', '#ff79c6', '#6272a4'
+        ];
+        const adjectives = ['Swift', 'Clever', 'Bright', 'Quick', 'Sharp', 'Bold', 'Keen', 'Agile'];
+        const nouns = ['Coder', 'Dev', 'Hacker', 'Ninja', 'Wizard', 'Guru', 'Pro', 'Ace'];
+
+        const myColor = userColors[Math.floor(Math.random() * userColors.length)];
+        const myName = adjectives[Math.floor(Math.random() * adjectives.length)] +
+            nouns[Math.floor(Math.random() * nouns.length)] +
+            Math.floor(Math.random() * 100);
+
+        // --- CodeMirror Setup ---
+        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: 'javascript',
+            theme: 'dracula',
+            lineNumbers: true,
+            lineWrapping: true,
+            tabSize: 2,
+            viewportMargin: Infinity,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            indentUnit: 2
+        });
+
+        // --- Socket.IO Connection ---
+        const socket = io({
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000
+        });
+
+        let isRemoteChange = false;
+        let users = [];
+
+        // Connection status
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            statusIndicator.className = 'connection-status status-connected';
+            statusText.textContent = 'Connected';
+
+            // Join the room
+            socket.emit('join-room', {
+                roomId: roomId,
+                user: {
+                    name: myName,
+                    color: myColor
+                }
+            });
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            statusIndicator.className = 'connection-status status-disconnected';
+            statusText.textContent = 'Disconnected';
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            statusIndicator.className = 'connection-status status-disconnected';
+            statusText.textContent = 'Connection failed';
+        });
+
+        // Receive initial document state
+        socket.on('init', (data) => {
+            console.log('Received initial state');
+            isRemoteChange = true;
+            editor.setValue(data.content);
+            isRemoteChange = false;
+            updateUserList(data.users);
+        });
+
+        // Receive text updates from others
+        socket.on('text-update', (data) => {
+            const currentCursor = editor.getCursor();
+            const currentScroll = editor.getScrollInfo();
+
+            isRemoteChange = true;
+            editor.setValue(data.content);
+            isRemoteChange = false;
+
+            // Restore cursor position
+            editor.setCursor(currentCursor);
+            editor.scrollTo(currentScroll.left, currentScroll.top);
+        });
+
+        // User joined
+        socket.on('user-joined', (user) => {
+            showToast(`${user.name} joined`, 'join');
+        });
+
+        // User left
+        socket.on('user-left', (data) => {
+            const user = users.find(u => u.id === data.id);
+            if (user) {
+                showToast(`${user.name} left`, 'leave');
+            }
+        });
+
+        // Users list update
+        socket.on('users-update', (updatedUsers) => {
+            users = updatedUsers;
+            updateUserList(updatedUsers);
+        });
+
+        // Send changes to server
+        editor.on('change', (cm, change) => {
+            if (!isRemoteChange) {
+                const content = cm.getValue();
+                const cursor = cm.getCursor();
+                socket.emit('text-change', {
+                    roomId: roomId,
+                    content: content,
+                    cursorPos: cursor
+                });
+            }
+        });
+
+        // Update cursor position
+        editor.on('cursorActivity', (cm) => {
+            if (!isRemoteChange) {
+                socket.emit('cursor-update', {
+                    roomId: roomId,
+                    cursorPos: cm.getCursor()
+                });
+            }
+        });
+
+        // --- UI Functions ---
+        function updateUserList(userList) {
+            userListEl.innerHTML = '';
+
+            userList.forEach((user, index) => {
+                const badge = document.createElement('div');
+                badge.className = 'user-badge w-8 h-8 rounded-full border-2 border-[#21222c] flex items-center justify-center text-[10px] font-bold cursor-help shadow-md';
+                badge.style.backgroundColor = user.color;
+                badge.style.zIndex = 100 - index;
+                badge.title = user.name + (user.name === myName ? ' (You)' : '');
+
+                // Get initials
+                const initials = user.name.replace(/[0-9]/g, '').substring(0, 2).toUpperCase();
+                badge.textContent = initials;
+
+                userListEl.appendChild(badge);
+            });
+
+            // Update status text with user count
+            if (userList.length > 0) {
+                statusText.textContent = `Connected • ${userList.length} user${userList.length > 1 ? 's' : ''}`;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            toastText.textContent = message;
+
+            // Update icon based on type
+            if (type === 'join') {
+                toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />';
+                toastIcon.className = 'h-5 w-5 text-green-400';
+            } else if (type === 'leave') {
+                toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />';
+                toastIcon.className = 'h-5 w-5 text-orange-400';
+            } else {
+                toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />';
+                toastIcon.className = 'h-5 w-5 text-green-400';
+            }
+
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- Share Functionality ---
+        shareBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(shareableUrl);
+                showToast('Link copied to clipboard!');
+            } catch (err) {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = shareableUrl;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Link copied!');
+                } catch (e) {
+                    prompt('Copy this link:', shareableUrl);
+                }
+                document.body.removeChild(textArea);
+            }
+        });
+
+        // --- Handle hash change ---
+        window.addEventListener('hashchange', () => {
+            const newRoomId = window.location.hash.substring(1);
+            if (newRoomId && newRoomId !== roomId) {
+                window.location.reload();
+            }
+        });
+
+        // --- Responsive ---
+        window.addEventListener('resize', () => {
+            editor.refresh();
+        });
+
+        // Focus editor on load
+        setTimeout(() => editor.focus(), 100);
+    </script>
+</body>
+
+</html>
