@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -14,16 +14,173 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        /* Theme Variables */
+        :root {
+            /* Light Theme */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
         }
 
-        .CodeMirror {
+        .dark {
+            --bg-primary: #282a36;
+            --bg-secondary: #21222c;
+            --bg-tertiary: #44475a;
+            --text-primary: #f8f8f2;
+            --text-secondary: #e2e4e9;
+            --text-muted: #6272a4;
+            --border-color: #44475a;
+            --accent-primary: #bd93f9;
+            --accent-secondary: #ff79c6;
+        }
+
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        /* ===== CodeMirror Dark Theme ===== */
+        .dark .CodeMirror {
             height: calc(100vh - 64px);
             font-family: 'Fira Code', monospace;
             font-size: 14px;
             line-height: 1.6;
             background: #282a36 !important;
+            color: #f8f8f2 !important;
+        }
+
+        /* .dark .CodeMirror-gutters {
+            background: #21222c !important;
+            border-right: 1px solid #44475a !important;
+        } */
+
+        .dark .CodeMirror-linenumber {
+            color: #6272a4 !important;
+        }
+
+        .dark .CodeMirror-cursor {
+            border-left: 2px solid #f8f8f2 !important;
+        }
+
+        .dark .CodeMirror-selected {
+            background: rgba(68, 71, 90, 0.8) !important;
+        }
+
+        .dark .CodeMirror-activeline-background {
+            background: rgba(68, 71, 90, 0.5) !important;
+        }
+
+        /* ===== CodeMirror Light Theme ===== */
+        html:not(.dark) .CodeMirror {
+            height: calc(100vh - 64px);
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            background: #ffffff !important;
+            color: #1e293b !important;
+        }
+
+        /* html:not(.dark) .CodeMirror-gutters {
+            background: #f8fafc !important;
+            border-right: 1px solid #e2e8f0 !important;
+        } */
+
+        html:not(.dark) .CodeMirror-linenumber {
+            color: #94a3b8 !important;
+        }
+
+        html:not(.dark) .CodeMirror-cursor {
+            border-left: 2px solid #1e293b !important;
+        }
+
+        html:not(.dark) .CodeMirror-selected {
+            background: #c7d2fe !important;
+        }
+
+        html:not(.dark) .CodeMirror-activeline-background {
+            background: #f1f5f9 !important;
+        }
+
+        /* Light theme syntax highlighting */
+        html:not(.dark) .cm-keyword {
+            color: #7c3aed !important;
+            font-weight: 500;
+        }
+
+        html:not(.dark) .cm-string {
+            color: #059669 !important;
+        }
+
+        html:not(.dark) .cm-string-2 {
+            color: #0d9488 !important;
+        }
+
+        html:not(.dark) .cm-number {
+            color: #dc2626 !important;
+        }
+
+        html:not(.dark) .cm-comment {
+            color: #6b7280 !important;
+            font-style: italic;
+        }
+
+        html:not(.dark) .cm-def {
+            color: #2563eb !important;
+        }
+
+        html:not(.dark) .cm-variable {
+            color: #1e293b !important;
+        }
+
+        html:not(.dark) .cm-variable-2 {
+            color: #0891b2 !important;
+        }
+
+        html:not(.dark) .cm-variable-3 {
+            color: #7c3aed !important;
+        }
+
+        html:not(.dark) .cm-property {
+            color: #0891b2 !important;
+        }
+
+        html:not(.dark) .cm-operator {
+            color: #dc2626 !important;
+        }
+
+        html:not(.dark) .cm-atom {
+            color: #7c3aed !important;
+        }
+
+        html:not(.dark) .cm-tag {
+            color: #dc2626 !important;
+        }
+
+        html:not(.dark) .cm-attribute {
+            color: #d97706 !important;
+        }
+
+        html:not(.dark) .cm-qualifier {
+            color: #7c3aed !important;
+        }
+
+        html:not(.dark) .cm-builtin {
+            color: #2563eb !important;
+        }
+
+        html:not(.dark) .cm-meta {
+            color: #6b7280 !important;
         }
 
         /* Remote cursor styles */
@@ -56,23 +213,42 @@
             transform: translateY(-2px);
         }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
+        /* Custom scrollbar - Dark */
+        .dark ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
 
-        ::-webkit-scrollbar-track {
+        .dark ::-webkit-scrollbar-track {
             background: #21222c;
         }
 
-        ::-webkit-scrollbar-thumb {
+        .dark ::-webkit-scrollbar-thumb {
             background: #44475a;
             border-radius: 4px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
+        .dark ::-webkit-scrollbar-thumb:hover {
             background: #6272a4;
+        }
+
+        /* Custom scrollbar - Light */
+        html:not(.dark) ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        html:not(.dark) ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        html:not(.dark) ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         .connection-status {
@@ -126,14 +302,117 @@
                 opacity: 1;
             }
         }
+
+        /* Theme Toggle Switch */
+        .theme-toggle {
+            position: relative;
+            width: 56px;
+            height: 28px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        html:not(.dark) .theme-toggle {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .theme-toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark .theme-toggle-thumb {
+            transform: translateX(28px);
+        }
+
+        .theme-toggle-thumb svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .sun-icon {
+            color: #f59e0b;
+            display: block;
+        }
+
+        .moon-icon {
+            color: #6366f1;
+            display: none;
+        }
+
+        .dark .sun-icon {
+            display: none;
+        }
+
+        .dark .moon-icon {
+            display: block;
+        }
+
+        /* Header theming */
+        .header-themed {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        /* Room badge theming */
+        .room-badge-themed {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+        }
+
+        .room-badge-themed .room-label {
+            color: var(--text-muted);
+        }
+
+        .room-badge-themed .room-id {
+            color: var(--accent-primary);
+        }
+
+        /* Toast theming */
+        .toast-themed {
+            background-color: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        /* Button theming */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        /* Divider theming */
+        .divider-themed {
+            background-color: var(--border-color);
+        }
+
+        /* User badge border theming */
+        .user-badge-border {
+            border-color: var(--bg-secondary);
+        }
     </style>
 </head>
 
-<body class="bg-[#282a36] text-[#f8f8f2] overflow-hidden">
+<body class="overflow-hidden">
 
     <!-- Header -->
-    <header
-        class="h-16 border-b border-[#44475a] flex items-center justify-between px-4 md:px-6 bg-[#21222c] z-50 relative">
+    <header class="header-themed h-16 border-b flex items-center justify-between px-4 md:px-6 z-50 relative">
         <div class="flex items-center space-x-3 md:space-x-4">
             <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"
@@ -144,7 +423,7 @@
             </div>
             <div>
                 <h1 class="font-bold text-sm md:text-base tracking-tight">CollabPad</h1>
-                <div class="flex items-center text-[10px] md:text-xs text-gray-400">
+                <div class="flex items-center text-[10px] md:text-xs" style="color: var(--text-muted);">
                     <span id="status-indicator" class="connection-status status-connecting"></span>
                     <span id="status-text">Connecting...</span>
                 </div>
@@ -153,9 +432,9 @@
 
         <div class="flex items-center space-x-2 md:space-x-4">
             <!-- Room ID Display -->
-            <div class="hidden sm:flex items-center bg-[#282a36] px-3 py-1.5 rounded-md border border-[#44475a]">
-                <span class="text-gray-400 text-xs mr-2">Room:</span>
-                <span id="room-display" class="text-xs font-mono text-indigo-400">---</span>
+            <div class="room-badge-themed hidden sm:flex items-center px-3 py-1.5 rounded-md border">
+                <span class="room-label text-xs mr-2">Room:</span>
+                <span id="room-display" class="room-id text-xs font-mono">---</span>
             </div>
 
             <!-- User List -->
@@ -163,11 +442,29 @@
                 <!-- User badges injected here -->
             </div>
 
-            <div class="h-8 w-[1px] bg-[#44475a] hidden md:block"></div>
+            <div class="divider-themed h-8 w-[1px] hidden md:block"></div>
+
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="theme-toggle" title="Toggle dark/light mode">
+                <div class="theme-toggle-thumb">
+                    <!-- Sun icon (light mode) -->
+                    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <!-- Moon icon (dark mode) -->
+                    <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </div>
+            </button>
 
             <!-- Share Button -->
             <button id="share-btn"
-                class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg active:scale-95">
+                class="btn-primary text-white px-3 py-1.5 md:px-4 md:py-2 rounded-md text-xs md:text-sm font-semibold transition-all flex items-center gap-2 shadow-lg active:scale-95">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -187,7 +484,7 @@
 
     <!-- Toast Notification -->
     <div id="toast"
-        class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#44475a] text-white px-6 py-3 rounded-full shadow-2xl translate-y-32 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 border border-indigo-400/30 z-50">
+        class="toast-themed fixed bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl translate-y-32 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 border z-50">
         <svg id="toast-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none"
             viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -208,6 +505,52 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
+        // --- Theme Management ---
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // Get saved theme or default to dark
+        function getSavedTheme() {
+            const saved = localStorage.getItem('collabpad-theme');
+            if (saved) return saved;
+            // Check system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                return 'light';
+            }
+            return 'dark';
+        }
+
+        // Apply theme
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            localStorage.setItem('collabpad-theme', theme);
+
+            // Update CodeMirror theme if editor exists
+            if (typeof editor !== 'undefined') {
+                editor.setOption('theme', theme === 'dark' ? 'dracula' : 'default');
+                editor.refresh();
+            }
+        }
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            showToast(`Switched to ${newTheme} mode`, 'theme');
+        });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('collabpad-theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+
         // --- Room Management ---
         function getRoomId() {
             const hash = window.location.hash;
@@ -248,17 +591,22 @@
             Math.floor(Math.random() * 100);
 
         // --- CodeMirror Setup ---
+        const currentTheme = html.classList.contains('dark') ? 'dracula' : 'default';
         const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
             mode: 'javascript',
-            theme: 'dracula',
+            theme: currentTheme,
             lineNumbers: true,
             lineWrapping: true,
             tabSize: 2,
             viewportMargin: Infinity,
             matchBrackets: true,
             autoCloseBrackets: true,
-            indentUnit: 2
+            indentUnit: 2,
+            styleActiveLine: true
         });
+
+        // Initialize theme
+        applyTheme(getSavedTheme());
 
         // --- Socket.IO Connection ---
         const socket = io({
@@ -369,9 +717,10 @@
 
             userList.forEach((user, index) => {
                 const badge = document.createElement('div');
-                badge.className = 'user-badge w-8 h-8 rounded-full border-2 border-[#21222c] flex items-center justify-center text-[10px] font-bold cursor-help shadow-md';
+                badge.className = 'user-badge user-badge-border w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-bold cursor-help shadow-md';
                 badge.style.backgroundColor = user.color;
                 badge.style.zIndex = 100 - index;
+                badge.style.color = '#fff';
                 badge.title = user.name + (user.name === myName ? ' (You)' : '');
 
                 // Get initials
@@ -397,6 +746,9 @@
             } else if (type === 'leave') {
                 toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />';
                 toastIcon.className = 'h-5 w-5 text-orange-400';
+            } else if (type === 'theme') {
+                toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />';
+                toastIcon.className = 'h-5 w-5 text-purple-400';
             } else {
                 toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />';
                 toastIcon.className = 'h-5 w-5 text-green-400';
